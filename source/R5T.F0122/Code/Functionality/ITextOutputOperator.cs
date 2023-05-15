@@ -119,11 +119,21 @@ namespace R5T.F0122
                                         : Instances.Strings.Empty
                                         ;
 
-                                    var output = Instances.EnumerableOperator.From($"{Instances.Characters.Tab}{instanceInformation.SimplePropertyName.Value}{isObsoleteToken}")
-                                        .AppendIf(
-                                            instanceInformation.Instance.DescriptionXml.Value != null,
-                                            $"{Instances.Characters.Tab}{Instances.Characters.Tab}{instanceInformation.Instance.DescriptionXml.Value}")
-                                        ;
+                                    var output = Instances.EnumerableOperator.From($"{Instances.Characters.Tab}{instanceInformation.SimplePropertyName.Value}{isObsoleteToken}");
+
+                                    // Append the XML documentation, if it exists.
+                                    if(instanceInformation.Instance.DescriptionXml.Value != null)
+                                    {
+                                        var indentedDocumentation = $"{Instances.Characters.Tab}{Instances.Characters.Tab}{instanceInformation.Instance.DescriptionXml.Value}"
+                                            // Handle new lines in the input.
+                                            .Replace(
+                                                Instances.Strings.NewLine_NonWindows,
+                                                $"{Instances.Characters.Tab}{Instances.Characters.Tab}"
+                                            )
+                                            ;
+
+                                        output = output.Append(indentedDocumentation);
+                                    }
 
                                     return output;
                                 }))
