@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using R5T.F0000;
 using R5T.F0000.Extensions;
 using R5T.F0000.Extensions.ForObject;
+using R5T.F0121;
 using R5T.T0132;
 using R5T.T0161;
 using R5T.T0161.Extensions;
@@ -15,6 +17,28 @@ namespace R5T.F0122
     [FunctionalityMarker]
     public partial interface ITextOutputOperator : IFunctionalityMarker
     {
+        public string Format(IEnumerable<InstanceDescriptor> instanceDescriptors)
+        {
+            var texts = instanceDescriptors
+                .Select(instanceDescriptor =>
+                {
+                    var kind = Instances.MemberNameOperator.Get_KindMarker(instanceDescriptor.KindMarkedFullMemberName);
+
+                    var text = kind.Value switch
+                    {
+                        IKindMarkers.Property_Constant => this.Format_Property(instanceDescriptor),
+                        IKindMarkers.Method_Constant => this.Format_Method(instanceDescriptor),
+                        _ => throw new Exception($"Unhandled kind: {kind}")
+                    };
+
+                    return text;
+                })
+                ;
+
+            var text = Instances.TextOperator.JoinLines(texts);
+            return text;
+        }
+
         public string Format_Method(InstanceDescriptor instanceDescriptor)
         {
             var kindMarkedFullMethodName = instanceDescriptor.KindMarkedFullMemberName.Value.ToKindMarkedFullMethodName();
@@ -35,7 +59,7 @@ namespace R5T.F0122
             var (parameters, _) = Instances.MemberNameOperator.Get_Parameters(namespacedTypedParameterizedMethodName);
 
             var parameterTypeNames = parameters
-                .Select(parameter => Instances.MemberNameOperator.Get_TypeName(parameter))
+                .Select(parameter => Instances.ParameterOperator.Get_TypeName(parameter))
                 ;
 
             var output = Instances.StringOperator.New()
@@ -54,6 +78,16 @@ namespace R5T.F0122
                 .ToString();
 
             return output;
+        }
+
+        public string Format_Methods(IEnumerable<InstanceDescriptor> instanceDescriptors)
+        {
+            var texts = instanceDescriptors
+                .Select(x => this.Format_Method(x))
+                ;
+
+            var text = Instances.TextOperator.JoinLines(texts);
+            return text;
         }
 
         public string Format_Property(InstanceDescriptor instanceDescriptor)
