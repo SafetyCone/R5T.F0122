@@ -11,6 +11,8 @@ using R5T.T0161;
 using R5T.T0161.Extensions;
 using R5T.T0170;
 
+using InstanceDescriptor = R5T.T0170.InstanceDescriptor;
+
 
 namespace R5T.F0122
 {
@@ -22,7 +24,7 @@ namespace R5T.F0122
             var texts = instanceDescriptors
                 .Select(instanceDescriptor =>
                 {
-                    var kind = Instances.MemberNameOperator.Get_KindMarker(instanceDescriptor.KindMarkedFullMemberName);
+                    var kind = Instances.MemberNameOperator.Get_KindMarker(instanceDescriptor.IdentityString.Value.ToKindMarkedFullMemberName());
 
                     var text = kind.Value switch
                     {
@@ -35,13 +37,13 @@ namespace R5T.F0122
                 })
                 ;
 
-            var text = Instances.TextOperator.JoinLines(texts);
+            var text = Instances.TextOperator.Join_Lines(texts);
             return text;
         }
 
         public string Format_Method(InstanceDescriptor instanceDescriptor)
         {
-            var kindMarkedFullMethodName = instanceDescriptor.KindMarkedFullMemberName.Value.ToKindMarkedFullMethodName();
+            var kindMarkedFullMethodName = instanceDescriptor.IdentityString.Value.ToKindMarkedFullMethodName();
 
             var (simplestMethodName, simpleMethodName, namespacedTypedMethodName, namespacedTypedParameterizedMethodName, fullMethodName)
                 = Instances.MemberNameOperator.Get_SimplestMethodName(kindMarkedFullMethodName);
@@ -86,13 +88,13 @@ namespace R5T.F0122
                 .Select(x => this.Format_Method(x))
                 ;
 
-            var text = Instances.TextOperator.JoinLines(texts);
+            var text = Instances.TextOperator.Join_Lines(texts);
             return text;
         }
 
         public string Format_Property(InstanceDescriptor instanceDescriptor)
         {
-            var kindMarkedFullPropertyName = instanceDescriptor.KindMarkedFullMemberName.Value.ToKindMarkedFullPropertyName();
+            var kindMarkedFullPropertyName = instanceDescriptor.IdentityString.Value.ToKindMarkedFullPropertyName();
 
             var (simpleTypeName, namespacedTypeName, namespacedTypedPropertyName, fullPropertyName)
                 = Instances.MemberNameOperator.Get_SimpleTypeName(kindMarkedFullPropertyName);
