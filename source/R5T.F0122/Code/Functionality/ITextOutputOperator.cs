@@ -52,6 +52,44 @@ namespace R5T.F0122
             return output;
         }
 
+        public string Format_Types(IEnumerable<InstanceDescriptor> instances)
+        {
+            var instanceAndTypeNames = Instances.Operations.Enumerate_SignaturesAndInstances(instances)
+                .Select(tuple =>
+                {
+                    var output = tuple.Signature switch
+                    {
+                        TypeSignature typeSignature => Instances.SignatureOperator.Get_SignatureStringValue(typeSignature),
+                        _ => throw Instances.SwitchOperator.Get_UnrecognizedSwitchTypeExpression(tuple.Signature)
+                    };
+
+                    return (tuple.Instance, TypeName: output);
+                })
+                ;
+
+            var lines = instanceAndTypeNames
+                .GroupBy(x => x.Instance.ProjectFilePath.Value)
+                .OrderAlphabetically(x => x.Key)
+                .SelectMany(group =>
+                {
+                    var output = Instances.EnumerableOperator.Empty<string>()
+                        .Append($"{group.Key}:")
+                        .Append(group
+                            .Select(x => x.TypeName)
+                            .OrderAlphabetically()
+                            .Select(x => $"{Instances.Characters.Tab}{x}")
+                        )
+                        .Append(Instances.Strings.Empty)
+                        ;
+
+                    return output;
+                })
+                ;
+
+            var text = Instances.TextOperator.Join_Lines(lines);
+            return text;
+        }
+
         public string Format_PropertiesAndMethods(IEnumerable<InstanceDescriptor> instances)
         {
             var declaringTypeInstances = Instances.Operations.Enumerate_SignaturesAndInstancesAs<IHasDeclaringType>(instances);
